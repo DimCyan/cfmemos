@@ -8,6 +8,51 @@ import {
 
 const app = new Hono();
 
+// 公开获取身份提供商列表 - 不需要认证（用于登录页面显示SSO选项）
+app.get('/public', async (c) => {
+  try {
+    const db = c.env.DB;
+
+    const stmt = db.prepare(`
+      SELECT id, name, type, identifier_filter, config
+      FROM identity_providers
+      ORDER BY created_ts ASC
+    `);
+
+    const { results } = await stmt.all();
+
+    // 隐藏敏感信息（client_secret）但保留必要的 OAuth 配置
+    const safeResults = results.map(idp => {
+      try {
+        const config = JSON.parse(idp.config);
+        // 删除 clientSecret
+        if (config.oauth2Config && config.oauth2Config.clientSecret) {
+          config.oauth2Config.clientSecret = '';
+        }
+        if (config.clientSecret) {
+          config.clientSecret = '';
+        }
+        return {
+          ...idp,
+          identifierFilter: idp.identifier_filter,
+          config
+        };
+      } catch (e) {
+        return {
+          ...idp,
+          identifierFilter: idp.identifier_filter,
+          config: {}
+        };
+      }
+    });
+
+    return jsonResponse(safeResults);
+  } catch (error) {
+    console.error('Error fetching public identity providers:', error);
+    return errorResponse('Failed to fetch identity providers', 500);
+  }
+});
+
 // 获取身份提供商列表 - 需要管理员权限
 app.get('/', async (c) => {
   const authError = await requireAdmin(c);

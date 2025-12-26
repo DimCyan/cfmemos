@@ -28,7 +28,7 @@ const SignIn = () => {
 
   useEffect(() => {
     const fetchIdentityProviderList = async () => {
-      const { data: identityProviderList } = await api.getIdentityProviderList();
+      const { data: identityProviderList } = await api.getPublicIdentityProviderList();
       setIdentityProviderList(identityProviderList);
     };
     fetchIdentityProviderList();

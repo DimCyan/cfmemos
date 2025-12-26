@@ -203,6 +203,10 @@ export function getIdentityProviderList() {
   return axios.get<IdentityProvider[]>("/api/v1/idp");
 }
 
+export function getPublicIdentityProviderList() {
+  return axios.get<IdentityProvider[]>("/api/v1/idp/public");
+}
+
 export function createIdentityProvider(identityProviderCreate: IdentityProviderCreate) {
   return axios.post<IdentityProvider>(`/api/v1/idp`, identityProviderCreate);
 }

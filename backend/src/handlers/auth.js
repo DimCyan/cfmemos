@@ -152,13 +152,34 @@ app.post('/signup', async (c) => {
       userRole
     ).run();
 
-    return jsonResponse({
+    // 转换角色字符串为枚举数字
+    const roleMap = { 'host': 1, 'admin': 2, 'user': 3 };
+    const roleValue = roleMap[userRole] || 3;
+
+    // 生成 JWT Token（自动登录）
+    const jwtSecret = getJWTSecret(c.env);
+    const token = await generateJWT({
       id: result.meta.last_row_id,
       username: body.username,
       nickname: body.nickname,
-      email: body.email,
-      role: userRole,
-      message: isFirstUser ? 'First user created as host' : 'User created successfully'
+      email: body.email || '',
+      role: roleValue
+    }, jwtSecret);
+
+    return jsonResponse({
+      success: true,
+      message: isFirstUser ? 'First user created as host' : 'User created successfully',
+      user: {
+        id: result.meta.last_row_id,
+        name: `users/${body.username}`,
+        username: body.username,
+        nickname: body.nickname,
+        email: body.email || '',
+        avatarUrl: '',
+        role: roleValue,
+        rowStatus: 0
+      },
+      token: token
     }, 201);
   } catch (error) {
     console.error('Error during signup:', error);
