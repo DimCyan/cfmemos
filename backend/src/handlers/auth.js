@@ -32,7 +32,7 @@ app.post('/signin', async (c) => {
 
     // 查找用户
     const stmt = db.prepare(`
-      SELECT id, username, nickname, password_hash, email, is_admin, role
+      SELECT id, username, nickname, password_hash, email, is_admin, role, row_status
       FROM users
       WHERE username = ?
     `);
@@ -82,7 +82,7 @@ app.post('/signin', async (c) => {
         email: user.email || '',
         avatarUrl: '',
         role: roleValue,
-        rowStatus: 0
+        rowStatus: user.row_status || 0
       },
       token: token
     });
@@ -177,7 +177,7 @@ app.post('/signup', async (c) => {
         email: body.email || '',
         avatarUrl: '',
         role: roleValue,
-        rowStatus: 0
+        rowStatus: 0  // 新创建的用户默认 rowStatus 为 0
       },
       token: token
     }, 201);
@@ -246,7 +246,7 @@ app.get('/status', async (c) => {
 
     // 从数据库获取最新的用户信息（包括头像、昵称等）
     const userStmt = db.prepare(`
-      SELECT id, username, nickname, email, avatar_url, is_admin, role
+      SELECT id, username, nickname, email, avatar_url, is_admin, role, row_status
       FROM users
       WHERE id = ?
     `);
@@ -273,7 +273,7 @@ app.get('/status', async (c) => {
         email: dbUser.email || '',
         avatarUrl: dbUser.avatar_url || '',
         role: roleValue,
-        rowStatus: 0
+        rowStatus: dbUser.row_status || 0
       }
     });
   } catch (error) {
@@ -521,7 +521,7 @@ app.post('/signin/sso', async (c) => {
         email: user.email || '',
         avatarUrl: user.avatar_url || '',
         role: roleValue,
-        rowStatus: 0
+        rowStatus: user.row_status || 0
       },
       token: token
     });
