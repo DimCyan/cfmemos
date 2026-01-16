@@ -29,6 +29,7 @@ const UserBanner = () => {
   const handleSignOutBtnClick = async () => {
     await api.signout();
     localStorage.removeItem("userId");
+    localStorage.removeItem("auth-token");
     window.location.href = "/auth";
   };
 
